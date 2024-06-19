@@ -1,62 +1,93 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { db } from "../firebase";
-import { collection, getDocs, addDoc } from "firebase/firestore";
+import { collection, addDoc, getDoc, doc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
-export const CreatePosts = () => {
-  const [posts, setPosts] = useState([]);
-
-  const postsCollectionRef = collection(db, "Posts");
+export const CreatePosts = ({ uid }) => {
+  const [newContent, setNewContent] = useState("");
+  const [newUsername, setNewUsername] = useState("");
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const data = await getDocs(postsCollectionRef);
-        const posts = data.docs.map((doc) => ({
-          ...doc.data(),
-        }));
-        setPosts(posts);
-      } catch (err) {
-        console.error(err);
+    const fetchUsername = async () => {
+      if (uid) {
+        try {
+          const userDoc = await getDoc(doc(db, "Users", uid));
+          if (userDoc.exists()) {
+            setNewUsername(userDoc.data().username);
+          } else {
+            console.error("No such document!");
+          }
+        } catch (err) {
+          console.error(err);
+        } finally {
+          setLoading(false);
+        }
       }
     };
-    fetchPosts();
-  }, []);
 
-  const [newUsername, setNewUsername] = useState("");
-  const [newContent, setNewContent] = useState("");
+    fetchUsername();
+  }, [uid]);
 
-  // Create new post
-  const createPost = async () => {
-    await addDoc(postsCollectionRef, {
-      username: newUsername,
-      content: newContent,
-    });
+  const handleCreatePost = async (e) => {
+    e.preventDefault();
+    if (!newContent.trim() || !newUsername.trim()) {
+      alert("Username or content cannot be empty.");
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, "Posts"), {
+        user_id: uid,
+        username: newUsername,
+        content: newContent,
+        likes: 0,
+      });
+      setNewContent("");
+      window.location.reload();
+    } catch (err) {
+      console.error(err);
+    }
   };
+
+  if (loading) {
+    return <p>Loading...</p>;
+  }
 
   return (
     <div className="flex flex-col items-center">
-      <input
-        type="text"
-        placeholder="Enter your username"
-        className="p-2 mt-4"
-        onChange={(e) => {
-          setNewUsername(e.target.value);
-        }}
-      />
-      <input
-        type="text"
-        placeholder="Enter your post content"
-        className="p-2 mt-4"
-        onChange={(e) => {
-          setNewContent(e.target.value);
-        }}
-      />
-      <button
-        className="p-2 mt-4 text-white bg-blue-500 rounded-lg"
-        onClick={createPost}>
-        Create Post
-      </button>
+      <form onSubmit={handleCreatePost} className="space-y-6">
+        <div>
+          <label
+            htmlFor="content"
+            className="block text-sm font-medium leading-6 text-gray-300 text-start">
+            Post Content
+          </label>
+          <div className="mt-2">
+            <input
+              id="content"
+              name="content"
+              type="text"
+              autoComplete="content"
+              onChange={(e) => setNewContent(e.target.value)}
+              value={newContent}
+              required
+              className="block w-full rounded-md border-0 py-1.5 bg-gray-900 shadow-sm ring-1 ring-inset ring-gray-500 placeholder:text-gray-400 text-gray-300 sm:text-sm pl-2 sm:leading-6"
+            />
+          </div>
+        </div>
+
+        <div>
+          <button
+            type="submit"
+            className="flex justify-center w-full px-3 py-2 text-sm font-semibold text-gray-300 bg-gray-900 rounded-md shadow-sm ring-1 ring-inset ring-white hover:bg-gray-800">
+            Create Post
+          </button>
+        </div>
+      </form>
     </div>
   );
 };
+
 export default CreatePosts;

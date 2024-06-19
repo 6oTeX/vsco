@@ -18,7 +18,7 @@ export const UserDetails = () => {
         followers: [],
         following: [],
       });
-      navigate("/profile"); // Redirect to the profile or home page after saving details
+      navigate("/home"); // Redirect to the profile or home page after saving details
     } catch (err) {
       console.error(err);
     }
@@ -65,7 +65,7 @@ export const UserDetails = () => {
                   autoComplete="dateOfBirth"
                   onChange={(e) => setDateOfBirth(e.target.value)}
                   required
-                  className="block w-full rounded-md border-0 py-1.5 bg-gray-900 shadow-sm ring-1 ring-inset ring-gray-500 placeholder:text-gray-400 text-gray-300 sm:text-sm pl-2 sm:leading-6"
+                  className="block w-full rounded-md border-0 py-1.5 text-gray-300 bg-gray-900 shadow-sm ring-1 ring-inset ring-gray-500 placeholder:text-gray-400 text-gray-300 sm:text-sm pl-2 sm:leading-6"
                 />
               </div>
             </div>
@@ -79,6 +79,13 @@ export const UserDetails = () => {
             </div>
           </form>
         </div>
+      </div>
+      <div className="relative flex-1 w-full lg:block">
+        <img
+          className="object-cover w-full h-full "
+          src="https://static1.srcdn.com/wordpress/wp-content/uploads/2022/03/Apple-iPhone-13-Black-And-White-BW-Photo.jpg"
+          alt=""
+        />
       </div>
     </div>
   );
