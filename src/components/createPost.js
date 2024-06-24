@@ -1,91 +1,122 @@
-import { useState, useEffect } from "react";
-import { db } from "../firebase";
-import { collection, addDoc, getDoc, doc } from "firebase/firestore";
+import { useEffect, useState } from "react";
+import { db, auth } from "../firebase";
+import { collection, getDocs, addDoc, doc, getDoc } from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 
-export const CreatePosts = ({ uid }) => {
+export const CreatePosts = () => {
   const [newContent, setNewContent] = useState("");
   const [newUsername, setNewUsername] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
 
+  const postsCollectionRef = collection(db, "Posts");
+
   useEffect(() => {
-    const fetchUsername = async () => {
-      if (uid) {
-        try {
-          const userDoc = await getDoc(doc(db, "Users", uid));
-          if (userDoc.exists()) {
-            setNewUsername(userDoc.data().username);
-          } else {
-            console.error("No such document!");
-          }
-        } catch (err) {
-          console.error(err);
-        } finally {
-          setLoading(false);
+    const fetchUsername = async (userId) => {
+      try {
+        const userDocRef = doc(db, "Users", userId);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          setNewUsername(userDoc.data().username);
+        } else {
+          console.error("No such document!");
+          setError("User not found");
         }
+      } catch (err) {
+        console.error("Error fetching user:", err);
+        setError("Failed to fetch user details");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchUsername();
-  }, [uid]);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setCurrentUser(user);
+        fetchUsername(user.uid);
+      } else {
+        setCurrentUser(null);
+        setLoading(false);
+      }
+    });
 
-  const handleCreatePost = async (e) => {
-    e.preventDefault();
-    if (!newContent.trim() || !newUsername.trim()) {
-      alert("Username or content cannot be empty.");
+    return () => unsubscribe();
+  }, []);
+
+  const createPost = async () => {
+    if (!newUsername || !newContent) {
+      setError("Username or content cannot be empty.");
       return;
     }
 
     try {
-      await addDoc(collection(db, "Posts"), {
-        user_id: uid,
+      await addDoc(postsCollectionRef, {
         username: newUsername,
         content: newContent,
+        user_id: currentUser.uid,
         likes: 0,
+        isPrivate: false,
       });
       setNewContent("");
-      window.location.reload();
     } catch (err) {
-      console.error(err);
+      console.error("Error creating post:", err);
+      setError("Failed to create post");
     }
   };
 
   if (loading) {
-    return <p>Loading...</p>;
+    return <div>Loading...</div>;
+  }
+
+  if (!currentUser) {
+    return (
+      <div className="flex flex-col items-center border-2 border-black border-solid rounded">
+        <p className="p-2 mt-4 text-red-500">
+          You must be logged in to create a post.
+        </p>
+        <button
+          className="p-2 mt-4 text-white bg-blue-500 rounded-lg"
+          onClick={() => navigate("/login")}
+        >
+          Go to Login
+        </button>
+      </div>
+    );
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
   }
 
   return (
-    <div className="flex flex-col items-center">
-      <form onSubmit={handleCreatePost} className="space-y-6">
-        <div>
-          <label
-            htmlFor="content"
-            className="block text-sm font-medium leading-6 text-black text-start">
-            Add a new post
-          </label>
-          <div className="mt-2">
-            <input
-              id="content"
-              name="content"
-              type="text"
-              autoComplete="content"
-              onChange={(e) => setNewContent(e.target.value)}
-              value={newContent}
-              required
-              className="block w-full rounded-md border-0 py-1.5 bg-gray-900 shadow-sm ring-1 ring-inset ring-gray-500 placeholder:text-gray-400 text-gray-300 sm:text-sm pl-2 sm:leading-6"
-            />
-          </div>
-        </div>
-
-        <div>
-          <button
-            type="submit"
-            className="flex justify-center w-full px-3 py-2 text-sm font-semibold text-gray-300 bg-gray-900 rounded-md shadow-sm ring-1 ring-inset ring-white hover:bg-gray-800">
-            Create Post
-          </button>
-        </div>
-      </form>
+    <div className="flex flex-col items-center p-2 border-2 border-black border-solid rounded w-fit">
+      <h1>
+        Create a post as <span className="font-bold">{newUsername}</span>
+      </h1>
+      <input
+        type="text"
+        value={newUsername}
+        readOnly
+        className="p-2 mt-4 border-2 border-black border-solid rounded"
+        placeholder="Username"
+      />
+      <input
+        type="text"
+        placeholder="Enter your post content"
+        className="p-2 mt-4 border-2 border-black border-solid rounded"
+        value={newContent}
+        onChange={(e) => setNewContent(e.target.value)}
+      />
+      <button
+        className="p-2 mt-4 text-white bg-blue-500 rounded-lg"
+        onClick={createPost}
+      >
+        Create Post
+      </button>
     </div>
   );
 };

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { db, auth } from "../firebase";
-import { collection, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, getDocs, deleteDoc, doc, updateDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { onAuthStateChanged } from "firebase/auth";
 
-export const Posts = () => {
+export const Posts = ({ searchQuery }) => {
   const [posts, setPosts] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
@@ -13,10 +13,22 @@ export const Posts = () => {
     const fetchPosts = async () => {
       try {
         const data = await getDocs(collection(db, "Posts"));
-        const posts = data.docs.map((doc) => ({
+        let posts = data.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
+
+        // Filter out private posts for non-owners
+        if (currentUser) {
+          posts = posts.filter(post => !post.isPrivate || post.user_id === currentUser.uid);
+        } else {
+          posts = posts.filter(post => !post.isPrivate);
+        }
+
+        if (searchQuery) {
+          posts = posts.filter(post => post.username.toLowerCase().includes(searchQuery.toLowerCase()));
+        }
+
         setPosts(posts);
       } catch (err) {
         console.error(err);
@@ -34,7 +46,7 @@ export const Posts = () => {
     fetchPosts();
 
     return () => unsubscribe();
-  }, []);
+  }, [searchQuery, currentUser]);
 
   const handleDelete = async (postId) => {
     try {
@@ -45,8 +57,28 @@ export const Posts = () => {
     }
   };
 
+  const handleLike = async (postId, likes) => {
+    try {
+      const postRef = doc(db, "Posts", postId);
+      await updateDoc(postRef, { likes: likes + 1 });
+      setPosts(posts.map(post => post.id === postId ? { ...post, likes: likes + 1 } : post));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const toggleVisibility = async (postId, isPrivate) => {
+    try {
+      const postRef = doc(db, "Posts", postId);
+      await updateDoc(postRef, { isPrivate: !isPrivate });
+      setPosts(posts.map(post => post.id === postId ? { ...post, isPrivate: !isPrivate } : post));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center w-full bg-black">
+    <div className="flex flex-col items-center w-full">
       <h1 className="text-3xl font-bold">Posts</h1>
       <div className="mt-4">
         {posts.map((post) => (
@@ -66,6 +98,11 @@ export const Posts = () => {
                       onClick={() => handleDelete(post.id)}>
                       Delete
                     </button>
+                    <button
+                      className="text-yellow-500 cursor-pointer"
+                      onClick={() => toggleVisibility(post.id, post.isPrivate)}>
+                      {post.isPrivate ? 'Make Public' : 'Make Private'}
+                    </button>
                   </div>
                 )}
               </div>
@@ -76,6 +113,22 @@ export const Posts = () => {
                 className="pt-1.5 rounded-lg pb-3"
                 width="300px"
               />
+              <div className="flex justify-between w-full p-1.5 text-sm align-middle">
+                <p className="text-gray-300 max-w-fit">
+                  <span className="font-bold">{post.username}:</span>{" "}
+                  {post.description}
+                </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="text-blue-500 cursor-pointer"
+                    onClick={() => handleLike(post.id, post.likes)}>
+                    Like
+                  </button>
+                  <p className="text-gray-300">
+                    <span className="font-bold">Likes:</span> {post.likes}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         ))}

@@ -8,6 +8,7 @@ import { auth } from "./firebase";
 const ExplorePage = () => {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
   const [uid, setUid] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const handleToggleSidebar = () => {
     setIsSidebarExpanded(!isSidebarExpanded);
@@ -17,7 +18,6 @@ const ExplorePage = () => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUid(user.uid);
-        console.log(user.uid);
       } else {
         setUid(null);
       }
@@ -26,26 +26,37 @@ const ExplorePage = () => {
     return () => unsubscribe();
   }, []);
 
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
   return (
-    <div className="flex w-full h-full">
+    <div className="flex w-full">
       <Nav isUser={isSidebarExpanded} handleToggle={handleToggleSidebar} />
+
       <div
-        className={`flex flex-col w-full h-full transition-all duration-300 bg-black text-white ${
+        className={`flex flex-col w-full transition-all duration-300 ${
           isSidebarExpanded ? "ml-16" : "ml-52"
         }`}>
-        <div className="w-full h-full p-10">
+        <div className="w-full p-10">
           <h1 className="text-3xl font-bold">VSCO</h1>
-          <div className="">
-            {uid ? (
-              <div className="absolute p-4 text-white bg-gray-300 right-12 w-fit rounded-xl">
-                <CreatePosts uid={uid} />
-              </div>
-            ) : (
-              <p>Please log in to create posts.</p>
-            )}
+          <div className="flex flex-row items-center">
+            <div className="w-1/2">
+          <input
+            type="text"
+            placeholder="Search by username"
+            className="w-1/3 p-2 mt-4 border-2 border-black border-solid rounded"
+            onChange={handleSearch}
+          />
           </div>
+          <div className="w-1/2">
+          <CreatePosts />
+            
+          </div>
+          </div>
+  
+          <Posts searchQuery={searchQuery} />
         </div>
-        <Posts />
       </div>
     </div>
   );
