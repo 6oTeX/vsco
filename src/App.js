@@ -37,10 +37,7 @@ function App() {
     <div className="flex w-full h-screen">
       <Router>
         <Routes>
-          <Route
-            path="/"
-            element={uid ? <Navigate to="/home" /> : <Navigate to="/login" />}
-          />
+          <Route path="/" element={<Navigate to="/home" />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/login" element={<Login />} />
           <Route path="/details/:uid" element={<UserDetails />} />

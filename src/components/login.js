@@ -11,18 +11,16 @@ import { doc, getDoc } from "firebase/firestore";
 export const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
 
   const signIn = async (e) => {
     e.preventDefault();
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
+      await signInWithEmailAndPassword(auth, email, password);
       navigate("/home"); // Redirect to the dashboard or home page after login
     } catch (err) {
+      setErrorMessage("Invalid email or password. Please try again.");
       console.error(err);
     }
   };
@@ -45,6 +43,7 @@ export const Login = () => {
         navigate(`/details/${user.uid}`);
       }
     } catch (err) {
+      setErrorMessage("Google sign-in failed. Please try again.");
       console.error(err);
     }
   };
@@ -63,6 +62,10 @@ export const Login = () => {
               Sign in to your account
             </h2>
           </div>
+
+          {errorMessage && (
+            <div className="mt-4 text-center text-red-500">{errorMessage}</div>
+          )}
 
           <div className="mt-8">
             <div>

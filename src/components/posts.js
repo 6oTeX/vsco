@@ -46,54 +46,39 @@ export const Posts = () => {
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="flex flex-col items-center">
-        <h1 className="text-3xl font-bold">Posts</h1>
-        <div className="mt-4">
-          {posts.map((post) => (
-            <div key={post.id} className="m-2 bg-black rounded-lg ">
-              <div className="px-3 pt-1">
-                <div className="flex justify-between w-full p-1.5 text-sm align-middle text-gray-300 ">
-                  <h4 className="p-1.5 font-bold">{post.username}</h4>
-                  {currentUser?.uid === post.user_id && (
-                    <div className="p-1.5 flex flex-row gap-3">
-                      <button
-                        className="text-blue-500 cursor-pointer"
-                        onClick={() => navigate(`/edit-post/${post.id}`)}>
-                        Edit
-                      </button>
-                      <button
-                        className="text-red-500 cursor-pointer"
-                        onClick={() => handleDelete(post.id)}>
-                        Delete
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                <img
-                  src={post.content}
-                  alt={post.username}
-                  className="pt-1.5 rounded-lg w-fit"
-                  // width={500}
-                  // height={500}
-                />
-                <div className="flex justify-between w-full p-1.5 text-sm align-middle">
-                  <p className="text-gray-300 max-w-fit">
-                    <span className="font-bold">{post.username}:</span>{" "}
-                    TDGAPgpdskgpdskpgkpdss
-                  </p>
-                  <div>
-                    <p className="text-gray-300">
-                      {" "}
-                      <span className="font-bold">Likes:</span> {post.likes}
-                    </p>
+    <div className="flex flex-col items-center w-full bg-black">
+      <h1 className="text-3xl font-bold">Posts</h1>
+      <div className="mt-4">
+        {posts.map((post) => (
+          <div key={post.id} className="m-2 bg-gray-800 rounded-lg">
+            <div className="px-3 pt-1">
+              <div className="flex justify-between w-full p-1.5 text-sm align-middle text-gray-300 ">
+                <h4 className="p-1.5 font-bold">{post.username}</h4>
+                {currentUser?.uid === post.user_id && (
+                  <div className="p-1.5 flex flex-row gap-3">
+                    <button
+                      className="text-blue-500 cursor-pointer"
+                      onClick={() => navigate(`/edit-post/${post.id}`)}>
+                      Edit
+                    </button>
+                    <button
+                      className="text-red-500 cursor-pointer"
+                      onClick={() => handleDelete(post.id)}>
+                      Delete
+                    </button>
                   </div>
-                </div>
+                )}
               </div>
+
+              <img
+                src={post.content}
+                alt={post.username}
+                className="pt-1.5 rounded-lg pb-3"
+                width="300px"
+              />
             </div>
-          ))}
-        </div>
+          </div>
+        ))}
       </div>
     </div>
   );

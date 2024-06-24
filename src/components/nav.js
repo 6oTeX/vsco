@@ -8,8 +8,8 @@ const Nav = ({ isUser, handleToggle }) => {
   return (
     <div className="fixed top-0 left-0 h-screen overflow-hidden">
       <div
-        className={`flex flex-col items-center h-full overflow-hidden text-gray-400 bg-gray-900 rounded-e${
-          isUser ? "-e w-16" : " w-52"
+        className={`flex flex-col items-center h-full overflow-hidden text-gray-400 bg-gray-900  ${
+          isUser ? " w-16" : " w-52"
         }`}>
         <button
           className="flex items-center justify-center mt-3"

@@ -61,8 +61,8 @@ export const CreatePosts = ({ uid }) => {
         <div>
           <label
             htmlFor="content"
-            className="block text-sm font-medium leading-6 text-gray-300 text-start">
-            Post Content
+            className="block text-sm font-medium leading-6 text-black text-start">
+            Add a new post
           </label>
           <div className="mt-2">
             <input
