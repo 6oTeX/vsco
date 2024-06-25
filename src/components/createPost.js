@@ -62,6 +62,8 @@ export const CreatePosts = () => {
         isPrivate: false,
       });
       setNewContent("");
+      window.location.reload();
+
     } catch (err) {
       console.error("Error creating post:", err);
       setError("Failed to create post");
@@ -108,10 +110,12 @@ export const CreatePosts = () => {
         type="text"
         placeholder="Enter your post content"
         className="p-2 mt-4 border-2 border-black border-solid rounded"
+        name="content"
         value={newContent}
         onChange={(e) => setNewContent(e.target.value)}
       />
       <button
+      type="submit"
         className="p-2 mt-4 text-white bg-blue-500 rounded-lg"
         onClick={createPost}
       >

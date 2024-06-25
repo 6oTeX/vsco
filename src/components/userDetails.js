@@ -65,7 +65,7 @@ export const UserDetails = () => {
                   autoComplete="dateOfBirth"
                   onChange={(e) => setDateOfBirth(e.target.value)}
                   required
-                  className="block w-full rounded-md border-0 py-1.5 text-gray-300 bg-gray-900 shadow-sm ring-1 ring-inset ring-gray-500 placeholder:text-gray-400 text-gray-300 sm:text-sm pl-2 sm:leading-6"
+                  className="block w-full rounded-md border-0 py-1.5 bg-gray-900 shadow-sm ring-1 ring-inset ring-gray-500 placeholder:text-gray-400 text-gray-300 sm:text-sm pl-2 sm:leading-6"
                 />
               </div>
             </div>
